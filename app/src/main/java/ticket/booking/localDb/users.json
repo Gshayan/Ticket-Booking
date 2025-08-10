@@ -1,0 +1,33 @@
+[
+  {
+    "user_id" : "GS19",
+    "name" : "Shayan Gupta",
+    "hashed_Password" : "abc@123",
+    "tickets_booked" : [
+      {
+        "source" : "Delhi",
+        "destination" : "Lucknow",
+        "date_of_arrival" : "2025-08-12T12:40:00Z",
+        "train" : {
+          "train_id" : "abc1",
+          "train_no" : 12345,
+          "seats" : [
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0],
+            [0,0,0,0,0,0]
+          ],
+          "station_times" : {
+            "Delhi": "13:00:00",
+            "Kanpur" : "16:20:00",
+            "Lucknow" : "18:15:00"
+          },
+          "stations" : [
+            "Delhi", "Kanpur", "Lucknow"
+          ]
+        }
+      }
+    ]
+  }
+]
