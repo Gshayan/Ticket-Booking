@@ -3,11 +3,14 @@
  */
 package ticket.booking;
 
+import ticket.booking.entities.Train;
 import ticket.booking.entities.User;
+import ticket.booking.services.TrainService;
 import ticket.booking.services.UserBookingService;
 import ticket.booking.util.UserServiceUtil;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.util.*;
 
 public class App {
@@ -33,6 +36,7 @@ public class App {
             System.out.println("6. Cancel my Booking");
             System.out.println("7. Exit");
             choice = scanner.nextInt();
+            Train trainSelectedForBooking = new Train();
             switch (choice){
                 case 1:
                     System.out.println("Enter the username to sign up");
@@ -59,6 +63,29 @@ public class App {
                     System.out.println("Fetching your tickets");
                     userBookingService.fetchBookedTickets();
                     break;
+                case 4:
+                    System.out.println("Enter the Source Station");
+                    String source = scanner.next();
+                    System.out.println("Enter the Destination Station");
+                    String destination = scanner.next();
+                    List<Train> trains = userBookingService.getTrains(source, destination);
+                    int i = 1;
+                    for (Train train : trains) {
+                        System.out.println(i+". Train Id: "+train.getTrainId());
+                        for (Map.Entry<String, String> entry : train.getStationTimes().entrySet()) {
+                            System.out.println("Station: "+entry.getKey()+", Time: "+entry.getValue());
+                        }
+                        i++;
+                    }
+                    System.out.println("Select the train number to book a seat");
+                    int trainNumber = scanner.nextInt();
+                    trainSelectedForBooking = trains.get(trainNumber-1);
+                    break;
+                case 5:
+                    List<List<Integer>> availableSeats = trainSelectedForBooking.getSeats();
+                    System.out.println("Select a Seat from the available seats");
+                    
+
             }
         }
     }
