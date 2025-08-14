@@ -13,8 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class UserBookingService
-{
+public class UserBookingService {
     private User user;
     private List<User> userList;
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -23,61 +22,89 @@ public class UserBookingService
     public UserBookingService() throws IOException {
         getUserList();
     }
+
     public UserBookingService(User user1) throws IOException {
         this.user = user1;
         getUserList();
     }
 
-    public void getUserList() throws IOException{
+    public void getUserList() throws IOException {
         File users = new File(USER_PATH);
-        userList = objectMapper.readValue(users, new TypeReference<List<User>>() {});
+        userList = objectMapper.readValue(users, new TypeReference<List<User>>() {
+        });
     }
 
-    public Boolean loginUser(){
-        Optional<User> foundUser = userList.stream().filter(user1 ->{
+    public Boolean loginUser() {
+        Optional<User> foundUser = userList.stream().filter(user1 -> {
             return user1.getName().equals(user.getName()) && UserServiceUtil.checkPassword(user.getPassword(), user1.getHashPassword());
         }).findFirst();
         return foundUser.isPresent();
     }
-    public Boolean registerUser(User user1){
+
+    public Boolean registerUser(User user1) {
         try {
             userList.add(user1);
             saveUserListToFile();
             return Boolean.TRUE;
-        }catch (IOException e){
+        } catch (IOException e) {
             return Boolean.FALSE;
         }
     }
 
-    public void saveUserListToFile() throws IOException {
+    private void saveUserListToFile() throws IOException {
         objectMapper.writeValue(new File(USER_PATH), userList);
     }
 
-    public void fetchBookedTickets(){
-        user.showTickets();
-    }
+//    public void fetchBookedTickets() {
+//        user.showTickets();
+//    }
 
-    public Boolean cancelBooking(String ticketId){
+    public Boolean cancelBooking(String ticketId) {
         try {
             Optional<Ticket> foundTicket = user.getTicketsBooked().stream().filter(ticket -> ticket.getTicketId().equals(ticketId)).findFirst();
-            if(foundTicket.isPresent()){
+            if (foundTicket.isPresent()) {
                 user.getTicketsBooked().remove(foundTicket.get());
                 saveUserListToFile();
                 return Boolean.TRUE;
-            }else{
+            } else {
                 return Boolean.FALSE;
             }
-        }catch (Exception e){
+        } catch (Exception e) {
             return Boolean.FALSE;
         }
     }
 
-    public List<Train> getTrains(String source, String destination){
-        try{
+    public List<Train> getTrains(String source, String destination) {
+        try {
             TrainService trainService = new TrainService();
             return trainService.searchTrains(source, destination);
-        }catch (IOException e){
+        } catch (IOException e) {
             return new ArrayList<>();
+        }
+    }
+
+    public List<List<Integer>> fetchSeats(Train train) {
+        return train.getSeats();
+    }
+
+    public Boolean bookSeat(Train train, int row, int column) {
+        try {
+            TrainService trainService = new TrainService();
+            List<List<Integer>> seats = train.getSeats();
+            if (row >= 0 && row < seats.size() && column >= 0 && column < seats.get(row).size()) {
+                if (seats.get(row).get(column) == 0) {
+                    seats.get(row).set(column, 1);
+                    train.setSeats(seats);
+                    trainService.updateTrainList(train);
+                    return Boolean.TRUE;
+                } else {
+                    return Boolean.FALSE;
+                }
+            } else {
+                return Boolean.FALSE;
+            }
+        } catch (IOException e) {
+            return Boolean.FALSE;
         }
     }
 }

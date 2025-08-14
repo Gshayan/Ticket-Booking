@@ -5,28 +5,26 @@ package ticket.booking;
 
 import ticket.booking.entities.Train;
 import ticket.booking.entities.User;
-import ticket.booking.services.TrainService;
 import ticket.booking.services.UserBookingService;
 import ticket.booking.util.UserServiceUtil;
 
 import java.io.IOException;
-import java.sql.SQLOutput;
 import java.util.*;
 
 public class App {
-    public static void main(String[] args)
-    {
+    public static void main(String[] args) {
         System.out.println("Running Ticket Booking System");
         Scanner scanner = new Scanner(System.in);
         int choice = 0;
         UserBookingService userBookingService;
         try {
             userBookingService = new UserBookingService();
-        }catch (IOException e){
-            System.out.println("Error in loading the service.");
+        } catch (IOException e) {
+            System.out.println("Error in loading the service."+e.getMessage());
+            e.printStackTrace();
             return;
         }
-        while(choice != 7){
+        while (choice != 7) {
             System.out.println("Choose from the following options:");
             System.out.println("1. Sign Up");
             System.out.println("2. Log In");
@@ -35,13 +33,14 @@ public class App {
             System.out.println("5. Book a Seat");
             System.out.println("6. Cancel my Booking");
             System.out.println("7. Exit");
+            System.out.print("Enter your choice : ");
             choice = scanner.nextInt();
             Train trainSelectedForBooking = new Train();
-            switch (choice){
+            switch (choice) {
                 case 1:
-                    System.out.println("Enter the username to sign up");
+                    System.out.print("Enter the username to sign up : ");
                     String nameToSignUp = scanner.next();
-                    System.out.println("Enter the password to sign up");
+                    System.out.print("Enter the password to sign up : ");
                     String passwordToSignUp = scanner.next();
                     User user = new User(nameToSignUp, passwordToSignUp, UserServiceUtil.hashPassword(passwordToSignUp), new ArrayList<>(), UUID.randomUUID().toString());
                     userBookingService.registerUser(user);
@@ -54,14 +53,15 @@ public class App {
                     User userToLogIn = new User(nameToLogIn, passwordToLogIn, UserServiceUtil.hashPassword(passwordToLogIn), new ArrayList<>(), UUID.randomUUID().toString());
                     try {
                         userBookingService = new UserBookingService(userToLogIn);
-                    }catch (IOException e){
-                        System.out.println("Error in loading the service.");
+                    } catch (IOException e) {
+                        System.out.println("Error in loading the service."+e.getMessage());
+                        e.printStackTrace();
                         return;
                     }
                     break;
                 case 3:
                     System.out.println("Fetching your tickets");
-                    userBookingService.fetchBookedTickets();
+//                    userBookingService.fetchBookedTickets();
                     break;
                 case 4:
                     System.out.println("Enter the Source Station");
@@ -71,21 +71,37 @@ public class App {
                     List<Train> trains = userBookingService.getTrains(source, destination);
                     int i = 1;
                     for (Train train : trains) {
-                        System.out.println(i+". Train Id: "+train.getTrainId());
+                        System.out.println(i + ". Train Id: " + train.getTrainId());
                         for (Map.Entry<String, String> entry : train.getStationTimes().entrySet()) {
-                            System.out.println("Station: "+entry.getKey()+", Time: "+entry.getValue());
+                            System.out.println("Station: " + entry.getKey() + ", Time: " + entry.getValue());
                         }
                         i++;
                     }
                     System.out.println("Select the train number to book a seat");
                     int trainNumber = scanner.nextInt();
-                    trainSelectedForBooking = trains.get(trainNumber-1);
+                    trainSelectedForBooking = trains.get(trainNumber - 1);
                     break;
                 case 5:
-                    List<List<Integer>> availableSeats = trainSelectedForBooking.getSeats();
+                    List<List<Integer>> availableSeats = userBookingService.fetchSeats(trainSelectedForBooking);
                     System.out.println("Select a Seat from the available seats");
-                    
-
+                    for (List<Integer> row : availableSeats) {
+                        for (int seat : row) {
+                            System.out.print(seat + " ");
+                        }
+                        System.out.println();
+                    }
+                    System.out.println("Enter the row and seat number to book a seat");
+                    System.out.println("Enter the row number");
+                    int row = scanner.nextInt();
+                    System.out.println("Enter the Seat number");
+                    int seat = scanner.nextInt();
+                    Boolean isSeatBooked = userBookingService.bookSeat(trainSelectedForBooking, row - 1, seat - 1);
+                    if (isSeatBooked) { //Why is there another way to write the condition i.e., isSeatBooked.equals(Boolean.TRUE)?
+                        System.out.println("Seat booked successfully");
+                    } else {
+                        System.out.println("Seat is not available");
+                    }
+                    break;
             }
         }
     }
